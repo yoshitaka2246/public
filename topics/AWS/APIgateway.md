@@ -8,7 +8,9 @@
    ↓  (トリガー)
 [Lambda Function]
    ↓  (レスポンス)
-API Gateway → Client に返す
+[API Gateway]
+   ↓
+[Client] に返す
 ```
 ## APIの４つの種類
 AWS API Gatewayは、異なるケースに対応するため、4種類のAPIタイプを提供しています。これらは大きく**HTTP通信**と**双方向通信**にわけられます。
