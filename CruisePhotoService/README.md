@@ -71,7 +71,52 @@ AWSの動きを詳述します。本システムは大きく**写真アップロ
    3. カタログページのHTMLを動的に生成
    4. **S3 public** にHTMLを保存し、そのURLのQRコードを生成した上でS3 public内のqrcode.jpgへ上書き
 3. 乗客がデジタルサイネージのQRコードを読み取りカタログページへアクセス
-## 主な機能
+## 工夫点
+### 1. S3署名付きURLによる**30分限定**のセキュアなアクセス制御
+**課題**　乗客のプライバシーを含む写真を、永続的にパブリック公開するのはセキュリティリスクが高い。
+**工夫（解決策）**　乗客の写真データはプライベートバケットに厳重に保管し、乗客への公開はLambdaがカタログ生成時に発行する「30分のみ有効なS3署名付きURL(GetObject)」を通じて行います。
+
+これにより、30分が経過するとURLが自動的に失効し、写真データにアクセスできなくなるため、高いセキュリティを担保しています。
+```Javascript
+import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
+import {GetObjectCommand} from "@aws-sdk/client-s3";
+
+//有効期限を30分に設定して署名付きURLを発行
+getSignedUrl(s3Client,command,{expiresIn: 60*30});
+```
+
+### 2. Promise.allによる署名付きURLの高速並列生成
+**課題**　写真が100枚、200枚と増えていった場合、一枚ずつ直列で署名付きURLを発行すると、API GatewayやLambdaのタイムアウトに抵触する可能性があります。
+**工夫（解決策）**　`map` を使って署名付きURL発行処理のPromise配列を作成し、`Promise.all`を使って全てのURL発行を並列実行しています。
+```Javascript
+const urlPromises = photoList.map(photoFileName =>{
+  const command = new GetObjectCommand(/*...*/);
+  return getSignedUrl(s3Client, command, {expiresIn:60*30})
+    .then(signedUrl => ({fileName: photoFileName, url:signedUrl}));
+})
+
+const signedPhotoUrls = await Promise.all(urlPromises);
+```
+### 3. 固定URLへの上書きによるサイネージ運用自動化
+**課題**　クルーズの便が変わるたびに、船内のデジタルサイネージに表示するQRコードを手動で更新するのは、非常に手間がかかります。
+**工夫（解決策）**　カタログ生成時に、常に固定のファイル名`qrcode.png`に対して新しく生成されたURLのQRコードを上書き保存します。上書きされたQRコードを常に参照できるように、サイネージで表示する`qrcode.html`が10秒ごとにリフレッシュしています。
+```Javascript
+//QRコードライブラリを使ってQRコードを生成して保存
+const qrCodeBuffer = await qrcode.toBuffer(catalogUrl, { 
+    type: 'png',
+    errorCorrectionLevel: 'H',
+    scale: 8 
+});
+
+//固定ファイルに上書き
+const qrKey = 'qrcode.png';
+await putContentToS3(qrKey, qrCodeBuffer, 'image/png');
+
+```
+### 4. CSSによる写真の均一なグリッドレイアウト
+### 5.　CORSによるアップロードAPIのオリジン限定
+
+
 ## 使用技術
 - バックエンド
   - AWS Lambda (Node.js)
