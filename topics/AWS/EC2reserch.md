@@ -52,3 +52,14 @@ AWSのリージョンを調査したい国に設定します。今回は、ア�
    2. ローカルサーバーを選択します
    3. 「IE Enhanced Security Configuration」を探します。
    4. 設定をオフにします。（Administratorsの方をオフにします）
+5. コマンドでChromeをインストールします。
+   1. 以下のコマンドをPowe shellで実行します
+
+```PowerShell
+$Path = $env:TEMP; $Installer = "chrome_installer.exe"; Invoke-WebRequest "http://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile $Path\$Installer; Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait; Remove-Item $Path\$Installer
+```
+
+### インスタンスを削除
+調査が終わったら、課金が継続されないようにインスタンスを終了（削除）します。
+
+EC2のコンソールから起動中のインスタンスを選択します。「インスタンスの状態」から「インスタンスを終了（削除）」をクリックします。このとき、インスタンスを停止だと課金が継続されてしまいます。
