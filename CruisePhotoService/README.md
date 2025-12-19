@@ -113,8 +113,6 @@ const qrKey = 'qrcode.png';
 await putContentToS3(qrKey, qrCodeBuffer, 'image/png');
 
 ```
-### 4. CSSによる写真の均一なグリッドレイアウト
-### 5.　CORSによるアップロードAPIのオリジン限定
 
 
 ## 使用技術
