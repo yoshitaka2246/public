@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QRコード表示</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center; /* 横中央 */
+      align-items: center;     /* 縦中央 */
+      height: 100vh;           /* 画面高さいっぱい */
+      background-color: #f8f8f8;
+    }
+    body {
+  background: linear-gradient(to bottom, #a0e7ff, #00bfff); /* 水色グラデーション */
+}
+
+    .qr-container {
+      width: 80%;          /* 画面幅の80%に縮小 */
+      max-width: 400px;    /* 最大幅400px */
+      padding: 10px;       /* 周囲の余白を少しだけ */
+      background-color: #fff; /* 白枠 */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* 影をつける */
+      border-radius: 8px;  /* 角を少し丸く */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .qr-container img {
+      width: 100%;   /* コンテナに合わせて拡大縮小 */
+      height: auto;  /* 縦横比を維持 */
+      display: block;
+    }
+
+    @media (max-width: 400px) {
+      .qr-container {
+        width: 95%; /* スマホではほぼ全幅 */
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="qr-container">
+    <img id="qr-code" src="qrcode.png" alt="QRコード">
+  </div>
+</body><script>
+    const qrImage = document.getElementById('qr-code');
+    const RELOAD_INTERVAL_MS = 10000; // 10秒
+    
+    // ⏰ 営業時間の定義（24時間表記）
+    const START_HOUR = 1; 
+    const END_HOUR = 23;
+
+    /**
+     * 現在の時刻がリロード範囲内かどうかをチェックする
+     * @returns {boolean} リロードを実行すべきなら true
+     */
+    function isWithinOperatingHours() {
+        const now = new Date();
+        const currentHour = now.getHours();
+
+        // 営業開始時刻（16時）以降 AND 営業終了時刻（22時）未満
+        // 22:00:00 になるとリロードは停止する
+        return currentHour >= START_HOUR && currentHour < END_HOUR;
+    }
+
+
+    function forceQrCodeReload() {
+        // 現在の時刻が営業時間外であれば、何もしないで終了
+        if (!isWithinOperatingHours()) {
+            console.log("営業時間外のためリロードをスキップ。");
+            return;
+        }
+
+        // 営業時間内であればリロード実行
+        const baseUrl = qrImage.src.split('?')[0];
+        qrImage.src = baseUrl + '?t=' + Date.now();
+        console.log(new Date().toLocaleDateString());
+        console.log("QRコードをリロードしました");
+    }
+
+    // 最初に一度実行
+    forceQrCodeReload(); 
+    
+    // 10秒ごとにリロード処理を実行（実行するかどうかは forceQrCodeReload 内で判断）
+    setInterval(forceQrCodeReload, RELOAD_INTERVAL_MS); 
+</script>
+</html>

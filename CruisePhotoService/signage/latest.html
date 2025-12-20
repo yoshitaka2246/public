@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>船内フォト デジタルサイネージ</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        
+        #content-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block; /* スクロールバーの二重表示防止 */
+        }
+
+        #status-bar {
+            position: fixed;
+            bottom: 0; left: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            z-index: 9999;
+            opacity: 0.5;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+
+    <iframe id="content-frame" src="about:blank"></iframe>
+    <div id="status-bar">Initializing...</div>
+    <canvas id="qr-canvas" style="display:none;"></canvas>
+
+    <script>
+        // --- 設定エリア ---
+        const CHECK_INTERVAL = 10000; // QRチェック間隔(ミリ秒)
+        const QR_IMAGE_URL = 'qrcode.png'; 
+        
+        // サイネージ用設定
+        const COLUMN_COUNT = 3;       // 1行に表示する枚数（PC/TV向けに多めに）
+        const SCROLL_SPEED = 0.5;       // スクロール速度（大きいほど速い）
+        const SCROLL_INTERVAL = 30;   // スクロールの滑らかさ（小さいほど滑らか）
+        // ----------------
+
+        let currentUrl = '';
+        const statusEl = document.getElementById('status-bar');
+        const iframeEl = document.getElementById('content-frame');
+        const canvas = document.getElementById('qr-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let scrollTimer = null;
+
+        // 1. Iframeの読み込み完了時に発動する「サイネージ化」処理
+        iframeEl.onload = () => {
+            if(iframeEl.src === 'about:blank') return;
+
+            try {
+                // Iframeの中身（DOM）を取得
+                const innerDoc = iframeEl.contentDocument || iframeEl.contentWindow.document;
+                
+                // A. 【CSS注入】レイアウトをサイネージ用に強制変更
+                const style = innerDoc.createElement('style');
+                style.textContent = `
+                    /* ヘッダーを少し小さくして写真領域を確保 */
+                    .header h1 { font-size: 1.5rem; margin: 0.5rem 0; }
+                    .header h2 { font-size: 1.2rem; margin: 0; }
+                    .header p { display: none; } /* 説明文は隠す */
+                    
+                    /* グリッドの列数を増やす */
+                    .photo-grid {
+                        display: grid !important;
+                        /* 画面幅に合わせて指定枚数を並べる */
+                        grid-template-columns: repeat(${COLUMN_COUNT}, 1fr) !important;
+                        gap: 10px !important;
+                        padding: 10px !important;
+                    }
+                    
+                    /* 写真を正方形にトリミングして整列させる */
+                    .photo-item img {
+                        width: 100%;
+                        aspect-ratio: 1 / 1; /* 正方形に */
+                        object-fit: cover;
+                        border-radius: 8px;
+                    }
+                    
+                    /* スクロールバーを隠す（見た目重視） */
+                    body::-webkit-scrollbar { display: none; }
+                `;
+                innerDoc.head.appendChild(style);
+
+                // B. 【JS注入】自動スクロール開始
+                startAutoScroll(iframeEl.contentWindow);
+
+            } catch (e) {
+                console.error("Cross-origin error? Same domain required.", e);
+            }
+        };
+
+        // 自動スクロールロジック
+        function startAutoScroll(win) {
+            if(scrollTimer) clearInterval(scrollTimer);
+            
+            let direction = 1; // 1: 下へ, -1: 上へ
+            
+            scrollTimer = setInterval(() => {
+                if (!win || !win.document) return;
+                
+                const currentScroll = win.scrollY;
+                const maxScroll = win.document.body.scrollHeight - win.innerHeight;
+
+                // 下まで行ったら少し待ってから上に戻る（簡易版：即反転）
+                if (currentScroll >= maxScroll && direction === 1) {
+                    direction = -1; // 上へ戻るモード
+                } else if (currentScroll　 <= 0 && direction === -1) {
+                    direction = 1;  // 下へ進むモード
+                }
+
+                // 上に戻る時は少し速くする
+                const speed = direction === 1 ? SCROLL_SPEED : (SCROLL_SPEED * 15);
+                win.scrollBy(0, speed * direction);
+                
+            }, SCROLL_INTERVAL);
+        }
+
+
+        // 2. QR監視ロジック (前回と同じ)
+        async function checkQrCode() {
+        try {
+            const imgUrl = QR_IMAGE_URL + '?t=' + Date.now();
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imgUrl;
+
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+
+                if (code) {
+                    const newUrl = code.data;
+                    if (newUrl !== currentUrl) {
+                        console.log("Detect new catalog:", newUrl);
+                        currentUrl = newUrl;
+                        
+                        // ★修正ポイント: サイネージモードであることを伝えるパラメータを付与
+                        const signageUrl = newUrl + (newUrl.includes('?') ? '&' : '?') + 'mode=signage';
+                        
+                        iframeEl.src = signageUrl; 
+                        statusEl.textContent = `Displaying: ${newUrl.split('/').pop()}`;
+                    }
+                }
+            };
+        } catch (e) { console.error(e); }
+    }
+        // 開始
+        checkQrCode();
+        setInterval(checkQrCode, CHECK_INTERVAL);
+    </script>
+</body>
+</html>

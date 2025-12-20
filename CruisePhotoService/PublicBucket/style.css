@@ -1,0 +1,178 @@
+/* catalog-style.css */
+
+body { 
+  font-family: sans-serif; 
+  margin: 0; 
+  background-color: #f4f8fb; 
+}
+
+.strong{
+  color:rgb(221, 0, 255)
+}
+
+.header { 
+  text-align: center; 
+  padding: 10px 5px; /* 上下10px、左右5px */
+  margin-bottom: 20px; /* 下部マージンを調整 */
+  background-color: #fff; /* ヘッダーの背景色 */
+  border-bottom: 1px solid #eee; /* ヘッダーの下線 */
+}
+
+.countdown { 
+  font-size: 1.5em; 
+  color: #d9534f; 
+  font-weight: bold; 
+}
+
+.photo-grid {
+  display: grid;
+  /* レスポンスブなグリッドレイアウト */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  padding: 2px;
+}
+
+.photo-item {
+  padding: 0; /* item内部のパディングはなし */
+  background-color: #fff;
+  text-align: center;
+  aspect-ratio: 1 / 1; 
+  overflow: hidden; /* はみ出した画像を隠す */
+}
+
+.photo-item a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.photo-item img { 
+  width: 100%; 
+  height: 100%; 
+  display: block;
+  aspect-ratio: 1 / 1; /* 正方形に近づけるための補助 */
+  object-fit: cover;
+  cursor: pointer; /* 💡 クリック可能であることを示すためカーソル変更 */
+}
+
+.lightbox-overlay {
+  background-color: rgba(0, 0, 0, 0.85); 
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ⬇⬇⬇ 修正: ライトボックスのレイアウト調整 ⬇⬇⬇ */
+
+/* ライトボックスのメインコンテンツエリア (画像 + ヒントボックス) */
+.lightbox-content {
+  display: flex;
+  flex-direction: column; /* 縦に並べる (画像 -> ヒント) */
+  align-items: center;
+  justify-content: center;
+  
+  /* ボタンがはみ出ないように、全体のサイズを制限 */
+  max-width: 90vw; 
+  max-height: 95vh;
+  
+  /* 念のため追加 */
+  position: relative; 
+}
+
+/* 写真のフレーム */
+.lightbox-image-frame {
+  background-color: #ffffff;
+  border: 10px solid #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  padding: 5px; /* フレームと写真の隙間 */
+  
+  /* 修正: ヒントボックスの高さを考慮して高さを制限 */
+  max-height: 70vh; 
+  
+  display: flex; /* 内部のimgを正しく収めるため */
+  align-items: center;
+  justify-content: center;
+  
+  flex-shrink: 1; /* コンテンツが溢れそうな時に縮む */
+  box-sizing: border-box;
+}
+
+#lightbox-image {
+  /* 修正: フレームのサイズに合わせる */
+  max-width: 100%;
+  max-height: 100%; 
+  
+  object-fit: contain;
+  display: block; /* 隙間をなくす */
+}
+
+/* ⬆⬆⬆ 修正: ライトボックスのレイアウト調整 ⬆⬆⬆ */
+
+
+/* ボタン類 (ポップなデザイン) */
+.lightbox-close, .lightbox-prev, .lightbox-next {
+  cursor: pointer;
+  position: absolute;
+  color: white;
+  font-weight: bold;
+  font-size: 30px;
+  transition: 0.3s;
+  user-select: none;
+  background-color: rgba(173, 216, 230, 0.5); /* 淡い水色の半透明 */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 50px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  z-index: 1010; /* 念のためコンテンツより手前に */
+}
+
+.lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
+  background-color: rgba(173, 216, 230, 0.9); /* ホバー時 */
+}
+
+.lightbox-close {
+  top: 20px;
+  right: 20px;
+  font-size: 40px;
+}
+.lightbox-prev { 
+  top: 50%;
+  transform: translateY(-50%);
+  left: 15px; 
+}
+.lightbox-next { 
+  top: 50%;
+  transform: translateY(-50%);
+  right: 15px; 
+}
+
+
+/* ⬇⬇⬇ ここから追加 ⬇⬇⬇ */
+/* 追加: ダウンロード方法のメッセージボックス */
+#download-hint-box {
+  background-color: rgba(255, 255, 255, 0.9); /* 少し透明な白 */
+  color: #333; /* 暗い色のテキスト */
+  padding: 10px 15px;
+  margin-top: 10px; /* 画像との隙間 */
+  border-radius: 6px;
+  max-width: 85vw; /* 画面幅の85%まで */
+  box-sizing: border-box; /* paddingを含めて計算 */
+  text-align: left; /* テキストは左揃え */
+  font-size: 0.9em;
+  line-height: 1.5;
+  flex-shrink: 0; /* ヒントボックスは縮まない */
+}
+
+#download-hint-box p {
+  margin: 0;
+}

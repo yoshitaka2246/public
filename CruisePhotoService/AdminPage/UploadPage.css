@@ -1,0 +1,193 @@
+:root {
+  --blue-main: #0077B6;
+  --blue-light: #E0F7FA;
+  --gray-bg: #F5F8FA;
+  --gray-text: #333;
+  --font-base: clamp(14px, 2.5vw, 16px);
+  --radius: 12px;
+  --vh: 100%;
+}
+
+/* 最新Safari対応: d**vh**サポート */
+@supports (height: 100dvh) {
+  :root {
+    --vh: 100dvh;
+  }
+}
+
+/* body: 表示領域にフィット + スクロール禁止 */
+html, body {
+  height: var(--vh);
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: none;
+  overscroll-behavior: none;
+  margin: 0;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  font-family: "Noto Sans JP", sans-serif;
+  background: linear-gradient(to bottom, var(--blue-light), var(--gray-bg));
+  color: var(--gray-text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* メインコンテナ */
+.upload-container {
+  width: 95vw;
+  max-width: 420px;
+  height: calc(var(--vh) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* タイトル */
+h1 {
+  text-align: center;
+  color: var(--blue-main);
+  font-size: 1.2rem;
+  margin: 0.5rem 0 0.8rem 0;
+}
+
+/* 各ステップ */
+.step {
+  border: 2px solid var(--blue-main);
+  border-radius: var(--radius);
+  padding: 1rem 0.8rem;
+  background-color: #F8FFFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.6rem;
+}
+
+.step + .step {
+  margin-top: 0.5rem;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.step-number {
+  background-color: var(--blue-main);
+  color: #fff;
+  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.step-title {
+  font-weight: 600;
+  color: #005F8A;
+  font-size: 0.95rem;
+}
+
+/* 入力要素（Safari対応含む） */
+input[type="date"],
+#CruiseId,
+input[type="file"] {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--blue-main);
+  border-radius: 8px;
+  font-size: var(--font-base);
+  color: var(--blue-main);
+  background-color: #fff;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+
+input[type="date"]::-webkit-datetime-edit {
+  padding: 0.2rem 0;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(37%) sepia(79%) saturate(1640%) hue-rotate(180deg);
+  cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+  background: var(--blue-main);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* アップロードボタン */
+#uploadButton {
+  width: 100%;
+  background-color: var(--blue-main);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#uploadButton:active {
+  background-color: #005F8A;
+  transform: scale(0.97);
+}
+
+/* コンソール（状態出力）画面 */
+#status {
+  font-size: 0.85rem;
+  color: #555;
+  text-align: left;
+  background-color: #F0F0F0;
+  border: 1px solid #CCC;
+  border-radius: 8px;
+  padding: 0.6rem;
+  height: 4rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin-top: 0.5rem;
+}
+
+/* 高さが低いデバイス対応 */
+@media (max-height: 680px) {
+  .upload-container {
+    padding: 0.7rem;
+  }
+  h1 { font-size: 1rem; }
+  #uploadButton { padding: 0.6rem; }
+  #status { height: 3.5rem; }
+}
+
+button:disabled{
+  background-color:#cccccc;
+  color:#666666;
+  cursor:not-allowed;
+}

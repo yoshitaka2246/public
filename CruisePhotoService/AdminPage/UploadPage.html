@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>船上写真アップロード</title>
+    <link rel="stylesheet" href="UploadPage.css"> 
+</head>
+<body>
+  <div class="upload-container">
+    <h1>写真をアップロード</h1>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-number">1</span>
+        <span class="step-title">日付を選択</span>
+      </div>
+      <input type="date" id="date" name="date" class="styled-date">
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-number">2</span>
+        <span class="step-title">時刻を選択</span>
+      </div>
+      <select id="CruiseId">
+        <option value="0">16:40-17:10</option>
+        <option value="1">17:10-17:30</option>
+        <option value="2">17:40-18:00</option>
+        <option value="3">18:10-18:30</option>
+        <option value="4">18:40-19:00</option>
+        <option value="5">19:10-19:30</option>
+        <option value="6">19:40-20:00</option>
+        <option value="7">20:10-20:30</option>
+        <option value="8">20:40-21:00</option>
+        <option value="9">21:10-21:30</option>
+      </select>  
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-number">3</span>
+        <span class="step-title">写真を選択</span>
+      </div>
+      <input type="file" id="fileInput" multiple accept="image/*">
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-number">4</span>
+        <span class="step-title">アップロード</span>
+      </div>
+      <button id="uploadButton">アップロード開始</button>
+    </div>
+
+    <p id="status">内容を確認してからアップロードしてください。</p>
+    <script src="UploadPage.js"></script>
+  </div>
+</body>
+</html>
